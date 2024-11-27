@@ -193,6 +193,9 @@ export default function Page() {
             <BenchmarkCard
               title="Difference from previous"
               description={`${
+                times.length < 2
+                  ? "-"
+                  :
                 times[times.length - 1] - times[times.length - 2]
               } ms`}
               color="text-cyan-500"
