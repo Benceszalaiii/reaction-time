@@ -1,101 +1,232 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Gauge } from "@/components/ui/gauge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { calculateAveragePercentageImprovement, cn } from "@/lib/utils";
+import { ResetIcon } from "@radix-ui/react-icons";
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
+import ReactionBox from "../components/reaction-box";
+import ThemeSwitcher from "../components/themebutton";
+import { toast } from "sonner";
+import { Chart } from "@/components/chart";
+
+export default function Page() {
+  const [times, setTimes] = useState<number[]>([]);
+  const [timesLoaded, setTimesLoaded] = useState(false);
+  useEffect(() => {
+    if (!timesLoaded) {
+      const times = localStorage.getItem("times");
+      if (times) {
+        setTimes(JSON.parse(times));
+      }
+      setTimesLoaded(true);
+      return;
+    }
+    if (times.length > 0) {
+      localStorage.setItem("times", JSON.stringify(times));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [times]);
+  const [lastTime, setLastTime] = useState<number | null>(null);
+  const timerContext = createContext<{
+    getter: number[];
+    setter: Dispatch<SetStateAction<number[]>>;
+    lastTime: number | null;
+    setLastTime: Dispatch<SetStateAction<number | null>>;
+  }>({ getter: times, setter: setTimes, lastTime, setLastTime });
+  const averageText = (times: number[]) => {
+    let sum = 0;
+    for (const time of times) {
+      sum += time;
+    }
+    const avg = sum / times.length;
+    if (isNaN(avg)) {
+      return "-";
+    }
+    const formatted = Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 1,
+    }).format(avg);
+    return formatted + " ms";
+  };
+  const getConsistency = (times: number[]) => {
+    if (times.length < 2) return 0; // Can't calculate SD with less than two times
+
+    const mean = times.reduce((sum, time) => sum + time, 0) / times.length; // Calculate mean
+    const variance =
+      times.reduce((sum, time) => sum + Math.pow(time - mean, 2), 0) /
+      times.length; // Variance calculation
+    const standardDeviation = Math.sqrt(variance); // Standard deviation = square root of variance
+
+    return Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(
+      standardDeviation
+    );
+  };
+  const getImprovementPrc = (times: number[]) => {
+    if (times.length > 0) {
+      const improv = calculateAveragePercentageImprovement(times);
+      return Math.round(improv);
+    }
+    return 0;
+  };
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="flex flex-col gap-2 items-center mb-24 md:p-12">
+      <TooltipProvider>
+        <div className="flex flex-row w-full items-start justify-end gap-4">
+          <ThemeSwitcher className="" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <h1 className="font-caveat text-4xl mb-6 text-cyan-500 font-semibold">
+          Reaction Time Test
+        </h1>
+        <timerContext.Provider
+          value={{ getter: times, setter: setTimes, lastTime, setLastTime }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          <ReactionBox context={timerContext} />
+        </timerContext.Provider>
+        <header className="flex flex-row gap-4 justify-between w-full text-center max-w-screen-lg items-center">
+          <h2 className="text-2xl font-semibold ml-4 font-sfpro">Statistics</h2>
+          {times.length > 0 && (
+            <Tooltip>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <TooltipTrigger asChild>
+                    <Button variant={"ghost"}>
+                      <ResetIcon />
+                    </Button>
+                  </TooltipTrigger>
+                </AlertDialogTrigger>
+                <TooltipContent>
+                  <p>Reset scores</p>
+                </TooltipContent>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently remove
+                      all your existing scores.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction className={`${buttonVariants({variant: "destructive"})}`} asChild>
+                      <Button
+                        onClick={() => {
+                          setTimes([]);
+                          setLastTime(null);
+                          localStorage.removeItem("times");
+                          toast.success("Scores reset successfully");
+                        }}
+                        variant={"destructive"}
+                      >
+                        Reset score
+                      </Button>
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </Tooltip>
+          )}
+        </header>
+        <section className="grid grid-cols-2 gap-6 px-4 md:grid-cols-3 place-items-center">
+          <BenchmarkCard
+            title="Best time"
+            color="text-cyan-500"
+            description={`${times.length > 0 ? Math.min(...times) : "-"} ms`}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+          <BenchmarkCard
+            title="Average time"
+            description={averageText(times)}
+            color="text-cyan-500"
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
+          <BenchmarkCard
+            title="Worst time"
+            description={`${times.length > 0 ? Math.max(...times) : "-"} ms`}
+            color="text-cyan-500"
           />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <BenchmarkCard
+            title="Consistency"
+            color="text-cyan-500"
+            description={`${getConsistency(times)} ms`}
+          />
+          <BenchmarkCard
+            title="Average improvement"
+            gauge={{
+              size: "medium",
+              value: getImprovementPrc(times),
+              displayValue: `${getImprovementPrc(times)}%`,
+            }}
+          />
+          <BenchmarkCard
+            title="Difference from previous"
+            description={`${times[times.length - 1] - times[times.length - 2]} ms`}
+            color="text-cyan-500"
+          />
+        </section>
+        <section className="max-w-screen-lg px-4 w-full">
+          <Chart times={times} />
+        </section>
+      </TooltipProvider>
+    </main>
   );
 }
+
+const BenchmarkCard = ({
+  title,
+  gauge,
+  description,
+  color,
+}: {
+  title: string;
+  color?: string;
+  gauge?: {
+    value: number;
+    displayValue?: string;
+    size: "large" | "small" | "medium";
+  };
+  description?: string;
+}) => {
+  return (
+    <Card className="md:w-64 md:h-48 w-36 h-36 flex flex-col gap-2 items-center justify-start p-4">
+      <CardTitle className="text-base self-start">{title}</CardTitle>
+      <CardContent
+        className={`size-full flex items-center justify-center ${color}`}
+      >
+        {gauge && (
+          <Gauge
+            showValue
+            size={gauge.size}
+            displayValue={gauge.displayValue}
+            color={color}
+            value={gauge.value}
+          />
+        )}
+        <p className={cn("text-2xl text-center")}>{description}</p>
+      </CardContent>
+    </Card>
+  );
+};

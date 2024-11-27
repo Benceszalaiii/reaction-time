@@ -1,0 +1,14 @@
+{
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "WillLuke.nextjs.hasPrompted": true,
+  "npm.packageManager": "bun",
+  "editor.formatOnSave": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "always",
+    "source.addMissingImports.ts": "always",
+    "source.organizeLinkDefinitions": "always",
+    "source.sortImports": "always"
+  }
+}
