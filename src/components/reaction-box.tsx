@@ -113,10 +113,10 @@ export default function ReactionBox({
     }
   };
   return (
-    <div className=" h-72 max-w-screen-lg w-full px-4">
+    <div className=" h-72 text-center w-full px-4">
     <button
       className={cn(
-        "size-full rounded-lg text-xl font-geistmono",
+        "size-full rounded-lg max-w-screen-lg text-xl font-geistmono",
         currentStyles
       )}
       onClick={onClickActions}

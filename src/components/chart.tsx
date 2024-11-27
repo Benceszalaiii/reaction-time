@@ -21,10 +21,10 @@ export function Chart({ times }: { times: number[] }) {
   const timeData = times.map((time, index) => ({ time, index }));
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-2 px-4">
         <CardTitle>All scores</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0.5">
         <ChartContainer config={chartConfig}>
           <LineChart
             accessibilityLayer

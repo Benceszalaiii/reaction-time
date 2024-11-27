@@ -1,5 +1,6 @@
 "use client";
 
+import { Chart } from "@/components/chart";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,10 +30,9 @@ import {
   useEffect,
   useState,
 } from "react";
+import { toast } from "sonner";
 import ReactionBox from "../components/reaction-box";
 import ThemeSwitcher from "../components/themebutton";
-import { toast } from "sonner";
-import { Chart } from "@/components/chart";
 
 export default function Page() {
   const [times, setTimes] = useState<number[]>([]);
@@ -93,12 +93,12 @@ export default function Page() {
     return 0;
   };
   return (
-    <main className="flex flex-col gap-2 items-center mb-24 md:p-12">
+    <main className="flex flex-col gap-2 mb-24 md:p-12">
       <TooltipProvider>
         <div className="flex flex-row w-full items-start justify-end gap-4">
           <ThemeSwitcher className="" />
         </div>
-        <h1 className="font-caveat text-4xl mb-6 text-cyan-500 font-semibold">
+        <h1 className="font-caveat w-full text-center text-4xl mb-6 text-cyan-500 font-semibold">
           Reaction Time Test
         </h1>
         <timerContext.Provider
@@ -106,7 +106,7 @@ export default function Page() {
         >
           <ReactionBox context={timerContext} />
         </timerContext.Provider>
-        <header className="flex flex-row gap-4 justify-between w-full text-center max-w-screen-lg items-center">
+        <header className="flex mt-16 flex-row justify-around w-full text-center items-center">
           <h2 className="text-2xl font-semibold ml-4 font-sfpro">Statistics</h2>
           {times.length > 0 && (
             <Tooltip>
@@ -133,7 +133,12 @@ export default function Page() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className={`${buttonVariants({variant: "destructive"})}`} asChild>
+                    <AlertDialogAction
+                      className={`${buttonVariants({
+                        variant: "destructive",
+                      })}`}
+                      asChild
+                    >
                       <Button
                         onClick={() => {
                           setTimes([]);
@@ -152,44 +157,47 @@ export default function Page() {
             </Tooltip>
           )}
         </header>
-        <section className="grid grid-cols-2 gap-6 px-4 md:grid-cols-3 place-items-center">
-          <BenchmarkCard
-            title="Best time"
-            color="text-cyan-500"
-            description={`${times.length > 0 ? Math.min(...times) : "-"} ms`}
-          />
-          <BenchmarkCard
-            title="Average time"
-            description={averageText(times)}
-            color="text-cyan-500"
-          />
-          <BenchmarkCard
-            title="Worst time"
-            description={`${times.length > 0 ? Math.max(...times) : "-"} ms`}
-            color="text-cyan-500"
-          />
-          <BenchmarkCard
-            title="Consistency"
-            color="text-cyan-500"
-            description={`${getConsistency(times)} ms`}
-          />
-          <BenchmarkCard
-            title="Average improvement"
-            gauge={{
-              size: "medium",
-              value: getImprovementPrc(times),
-              displayValue: `${getImprovementPrc(times)}%`,
-            }}
-          />
-          <BenchmarkCard
-            title="Difference from previous"
-            description={`${times[times.length - 1] - times[times.length - 2]} ms`}
-            color="text-cyan-500"
-          />
-        </section>
-        <section className="max-w-screen-lg px-4 w-full">
-          <Chart times={times} />
-        </section>
+          <section className="grid grid-cols-2 grid-flow-row-dense mx-auto gap-2 md:gap-4 px-4 md:grid-cols-3">
+            <BenchmarkCard
+              title="Best time"
+              color="text-cyan-500"
+              description={`${times.length > 0 ? Math.min(...times) : "-"} ms`}
+            />
+            <BenchmarkCard
+              title="Average time"
+              description={averageText(times)}
+              color="text-cyan-500"
+            />
+            <BenchmarkCard
+              title="Average improvement"
+              gauge={{
+                size: "medium",
+                value: getImprovementPrc(times),
+                displayValue: `${getImprovementPrc(times)}%`,
+              }}
+            />
+            <section className="col-span-full  w-full">
+              <Chart times={times} />
+            </section>
+            <BenchmarkCard
+              title="Worst time"
+              description={`${times.length > 0 ? Math.max(...times) : "-"} ms`}
+              color="text-cyan-500"
+            />
+            <BenchmarkCard
+              title="Consistency"
+              color="text-cyan-500"
+              description={`${getConsistency(times)} ms`}
+            />
+
+            <BenchmarkCard
+              title="Difference from previous"
+              description={`${
+                times[times.length - 1] - times[times.length - 2]
+              } ms`}
+              color="text-cyan-500"
+            />
+          </section>
       </TooltipProvider>
     </main>
   );
@@ -211,7 +219,7 @@ const BenchmarkCard = ({
   description?: string;
 }) => {
   return (
-    <Card className="md:w-64 md:h-48 w-36 h-36 flex flex-col gap-2 items-center justify-start p-4">
+    <Card className="min-w-full md:h-48 w-full h-40 flex flex-col gap-2 items-center justify-start p-4">
       <CardTitle className="text-base self-start">{title}</CardTitle>
       <CardContent
         className={`size-full flex items-center justify-center ${color}`}
