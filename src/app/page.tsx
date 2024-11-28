@@ -315,7 +315,7 @@ const HumanBenchmarkCard = ({ time }: { time: number }) => {
             />
           </TooltipTrigger>
           <TooltipContent>
-            <p>Better results than {result.value}% of people.</p>
+            <p>Better results than {100 - result.value}% of people.</p>
           </TooltipContent>
         </Tooltip>
         <p className={cn("text-gray-500 mt-4 text-center")}>
