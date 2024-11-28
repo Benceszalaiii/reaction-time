@@ -22,7 +22,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { calculateAveragePercentageImprovement, cn } from "@/lib/utils";
-import { ResetIcon } from "@radix-ui/react-icons";
+import {
+  EnterFullScreenIcon,
+  ExitFullScreenIcon,
+  ResetIcon,
+} from "@radix-ui/react-icons";
+import { motion, useCycle } from "motion/react";
 import {
   createContext,
   Dispatch,
@@ -33,7 +38,7 @@ import {
 import { toast } from "sonner";
 import ReactionBox from "../components/reaction-box";
 import ThemeSwitcher from "../components/themebutton";
-
+import {RemoveScrollBar} from 'react-remove-scroll-bar';
 export default function Page() {
   const [times, setTimes] = useState<number[]>([]);
   const [timesLoaded, setTimesLoaded] = useState(false);
@@ -99,8 +104,10 @@ export default function Page() {
     }
     return 0;
   };
+  const [fullScreen, toggleFullscreen] = useCycle(false, true);
   return (
-    <main className="flex flex-col gap-2 mb-24 md:p-12">
+    <main className="flex flex-col gap-2 mb-24 md:p-12 md:pb-0">
+      {fullScreen && <RemoveScrollBar />}
       <TooltipProvider>
         <div className="flex flex-row w-full items-start justify-end gap-4">
           <ThemeSwitcher className="" />
@@ -164,7 +171,7 @@ export default function Page() {
             </Tooltip>
           )}
         </header>
-        <section className="grid grid-cols-2 grid-flow-row-dense  gap-2 md:gap-4 px-4 md:grid-cols-3">
+        <section className="grid grid-cols-2 grid-flow-row-dense gap-2 md:gap-4 px-4 md:grid-cols-3">
           <BenchmarkCard
             title="Best time"
             color="text-cyan-500"
@@ -183,7 +190,45 @@ export default function Page() {
               displayValue: `${getImprovementPrc(times)}%`,
             }}
           />
-          <Chart times={times} />
+
+          <motion.div
+          transition={fullScreen ? { duration: 0.5}: {duration: 0, visualDuration: 0}}
+            animate={
+              fullScreen
+                ? {
+                    width: "100vw",
+                    height: "100vh",
+                    position: "fixed",
+                    left: 0,
+                    className: "flex flex-col items-center justify-center h-full w-full",
+                    top: 0
+                  }
+                : {
+                  position: "relative",
+                  width: "100%",
+                  height: "100%"
+                }
+            }
+            className="col-span-2 backdrop-blur-lg bg-background z-40 row-span-2 relative"
+          >
+            {fullScreen ? (
+              <ExitFullScreenIcon
+                onClick={() => {
+                  toggleFullscreen();
+                }}
+                className="absolute cursor-pointer right-4 top-4 h-16 w-16 z-50 p-4"
+              />
+            ) : (
+              <EnterFullScreenIcon
+                onClick={() => {
+                  toggleFullscreen();
+                }}
+                className="absolute cursor-pointer right-4 top-4 h-16 w-16 z-50 p-4"
+              />
+            )}
+            <Chart times={times} />
+          </motion.div>
+
           <BenchmarkCard
             title="Worst time"
             description={`${times.length > 0 ? Math.max(...times) : "-"} ms`}
@@ -232,7 +277,7 @@ const BenchmarkCard = ({
   description?: string;
 }) => {
   return (
-    <Card className="min-w-full h-full w-full flex flex-col gap-2 items-center justify-start p-4">
+    <Card className="min-w-full h-full hover:scale-105 duration-300 transition-transform w-full flex flex-col gap-2 items-center justify-start p-4">
       <CardTitle className="text-base self-start">{title}</CardTitle>
       <CardContent
         className={`size-full flex items-center justify-center ${color}`}
@@ -299,7 +344,7 @@ const HumanBenchmarkCard = ({ time }: { time: number }) => {
   };
   const result = getValueByThreshold(time);
   return (
-    <Card className="min-w-full h-full w-full flex flex-col gap-2 items-center justify-start p-4">
+    <Card className="min-w-full h-full w-full flex hover:scale-105 duration-300 transition-transform flex-col gap-2 items-center justify-start p-4">
       <CardTitle className="text-base self-start">Compared to others</CardTitle>
       <CardContent
         className={`size-full flex flex-col items-center justify-center`}

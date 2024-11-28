@@ -9,7 +9,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
 const chartConfig = {
   time: {
     label: "Score",
@@ -20,17 +19,13 @@ const chartConfig = {
 export function Chart({ times }: { times: number[] }) {
   const timeData = times.map((time, index) => ({ time, index }));
   return (
-    <Card className="col-span-2 row-span-2 w-full">
+    <Card className="w-full">
       <CardHeader className="p-2 px-4">
         <CardTitle>All scores</CardTitle>
       </CardHeader>
       <CardContent className="p-0.5">
         <ChartContainer config={chartConfig}>
-          <LineChart
-            accessibilityLayer
-            data={timeData}
-
-          >
+          <LineChart accessibilityLayer data={timeData}>
             <CartesianGrid vertical={false} />
             <XAxis
               dataKey="index"
