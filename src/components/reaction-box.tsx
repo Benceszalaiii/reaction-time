@@ -70,7 +70,7 @@ export default function ReactionBox({
         break;
     }
   }, [state]);
-  const onClickActions = () => {
+  const onClickActions = (time: number) => {
     if (state === 1) {
       if (timeOutRef.current) {
         clearTimeout(timeOutRef.current);
@@ -89,13 +89,13 @@ export default function ReactionBox({
       setState(1);
       timeOutRef.current = setTimeout(() => {
         setState(2);
-        setStartTime(new Date().getTime());
-      }, randomIntFromInterval(2500, 4000));
+        setStartTime(time);
+      }, randomIntFromInterval(2500, 5000));
       return;
     }
     if (state === 2) {
       setState(3);
-      const actualTime = new Date().getTime() - startTime;
+      const actualTime = time - startTime;
       setLastTime(actualTime);
       setReactionTime(Math.min(5000, actualTime));
       if (times.length > 0) {
@@ -119,7 +119,10 @@ export default function ReactionBox({
         "size-full rounded-lg max-w-screen-lg text-xl font-geistmono",
         currentStyles
       )}
-      onClick={onClickActions}
+      onClick={()=>{
+        const nowTime = new Date().getTime();
+        onClickActions(nowTime)}
+      }
     >
       {state === 0
         ? lastTime
