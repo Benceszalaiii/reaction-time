@@ -87,7 +87,7 @@ export default function ReactionBox({
     }
 
     if (state === 0 || state === 4) {
-      const randomTime = randomIntFromInterval(2500, 5000)
+      const randomTime = randomIntFromInterval(2500, 5000);
       setStartTime(time + randomTime);
       setState(1);
       timeOutRef.current = setTimeout(() => {
@@ -106,40 +106,41 @@ export default function ReactionBox({
           toast.success(
             `You beat your personal record of ${minBefore}ms by ${
               minBefore - actualTime
-            }ms!`, {icon: "🎉"}
+            }ms!`,
+            { icon: "🎉" }
           );
         }
       }
-      setTimes([...times, actualTime]);
+      setTimes([...times, actualTime - 30 ? actualTime - 30 : actualTime]);
       return;
     }
   };
   return (
     <div className=" h-72 text-center w-full px-4">
-    <button
-      className={cn(
-        "size-full rounded-lg max-w-screen-lg text-xl font-geistmono",
-        currentStyles
-      )}
-      onClick={()=>{
-        const nowTime = Date.now();
-        onClickActions(nowTime)}
-      }
-    >
-      {state === 0
-        ? lastTime
-          ? lastTime + "ms"
-          : "Click to start"
-        : state === 1
-        ? "Click when this box turns green"
-        : state === 2
-        ? "Click now!"
-        : state === 3
-        ? `Your reaction time is ${reactionTime}ms`
-        : state === 4
-        ? "You clicked too early! Try again."
-        : "Click to start"}
-    </button>
+      <button
+        className={cn(
+          "size-full rounded-lg max-w-screen-lg text-xl font-geistmono",
+          currentStyles
+        )}
+        onClick={() => {
+          const nowTime = Date.now();
+          onClickActions(nowTime);
+        }}
+      >
+        {state === 0
+          ? lastTime
+            ? lastTime + "ms"
+            : "Click to start"
+          : state === 1
+          ? "Click when this box turns green"
+          : state === 2
+          ? "Click now!"
+          : state === 3
+          ? `Your reaction time is ${reactionTime}ms`
+          : state === 4
+          ? "You clicked too early! Try again."
+          : "Click to start"}
+      </button>
     </div>
   );
 }
