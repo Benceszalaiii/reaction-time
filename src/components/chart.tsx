@@ -20,7 +20,7 @@ const chartConfig = {
 export function Chart({ times }: { times: number[] }) {
   const timeData = times.map((time, index) => ({ time, index }));
   return (
-    <Card>
+    <Card className="col-span-2 row-span-2 w-full">
       <CardHeader className="p-2 px-4">
         <CardTitle>All scores</CardTitle>
       </CardHeader>
@@ -29,10 +29,7 @@ export function Chart({ times }: { times: number[] }) {
           <LineChart
             accessibilityLayer
             data={timeData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -40,7 +37,7 @@ export function Chart({ times }: { times: number[] }) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value + "."}
+              tickFormatter={(value) => value + 1 + "."}
             />
             <YAxis
               dataKey="time"

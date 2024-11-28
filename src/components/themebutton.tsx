@@ -18,7 +18,7 @@ export default function ThemeSwitcher({ className }: { className?: string }) {
       className={className || ""}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
-      {resolvedTheme === "dark" ? <SunIcon /> : <MoonIcon />}
+      {resolvedTheme === "dark" ? <MoonIcon /> : <SunIcon />}
     </Button>
   );
 }

@@ -35,7 +35,7 @@ export default function ReactionBox({
     3: Reaction time displayed
     4: Clicked before green
   */
-  const [startTime, setStartTime] = useState(new Date().getTime());
+  const [startTime, setStartTime] = useState(Date.now());
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const {
     getter: times,
@@ -43,6 +43,7 @@ export default function ReactionBox({
     lastTime,
     setLastTime,
   } = useContext(context);
+  // Set reaction time to null when the value was pushed to context
   useEffect(() => {
     if (reactionTime) {
       setTimes([...times, reactionTime]);
@@ -86,17 +87,18 @@ export default function ReactionBox({
     }
 
     if (state === 0 || state === 4) {
+      const randomTime = randomIntFromInterval(2500, 5000)
+      setStartTime(time + randomTime);
       setState(1);
       timeOutRef.current = setTimeout(() => {
         setState(2);
-        setStartTime(time);
-      }, randomIntFromInterval(2500, 5000));
+      }, randomTime);
       return;
     }
     if (state === 2) {
       setState(3);
       const actualTime = time - startTime;
-      setLastTime(actualTime);
+      setLastTime(actualTime - 30 > 0 ? actualTime - 30 : actualTime);
       setReactionTime(Math.min(5000, actualTime));
       if (times.length > 0) {
         const minBefore = Math.min(...times);
@@ -120,7 +122,7 @@ export default function ReactionBox({
         currentStyles
       )}
       onClick={()=>{
-        const nowTime = new Date().getTime();
+        const nowTime = Date.now();
         onClickActions(nowTime)}
       }
     >

@@ -72,6 +72,13 @@ export default function Page() {
     }).format(avg);
     return formatted + " ms";
   };
+  const getAverage = () => {
+    if (times.length > 0) {
+      const sum = times.reduce((acc, time) => acc + time, 0);
+      return sum / times.length;
+    }
+    return 0;
+  };
   const getConsistency = (times: number[]) => {
     if (times.length < 2) return 0; // Can't calculate SD with less than two times
 
@@ -157,50 +164,53 @@ export default function Page() {
             </Tooltip>
           )}
         </header>
-          <section className="grid grid-cols-2 grid-flow-row-dense mx-auto gap-2 md:gap-4 px-4 md:grid-cols-3">
-            <BenchmarkCard
-              title="Best time"
-              color="text-cyan-500"
-              description={`${times.length > 0 ? Math.min(...times) : "-"} ms`}
-            />
-            <BenchmarkCard
-              title="Average time"
-              description={averageText(times)}
-              color="text-cyan-500"
-            />
-            <BenchmarkCard
-              title="Average improvement"
-              gauge={{
-                size: "medium",
-                value: getImprovementPrc(times),
-                displayValue: `${getImprovementPrc(times)}%`,
-              }}
-            />
-            <section className="col-span-full  w-full">
-              <Chart times={times} />
-            </section>
-            <BenchmarkCard
-              title="Worst time"
-              description={`${times.length > 0 ? Math.max(...times) : "-"} ms`}
-              color="text-cyan-500"
-            />
-            <BenchmarkCard
-              title="Consistency"
-              color="text-cyan-500"
-              description={`${getConsistency(times)} ms`}
-            />
+        <section className="grid grid-cols-2 grid-flow-row-dense  gap-2 md:gap-4 px-4 md:grid-cols-3">
+          <BenchmarkCard
+            title="Best time"
+            color="text-cyan-500"
+            description={`${times.length > 0 ? Math.min(...times) : "-"} ms`}
+          />
+          <BenchmarkCard
+            title="Average time"
+            description={averageText(times)}
+            color="text-cyan-500"
+          />
+          <BenchmarkCard
+            title="Average improvement"
+            gauge={{
+              size: "medium",
+              value: getImprovementPrc(times),
+              displayValue: `${getImprovementPrc(times)}%`,
+            }}
+          />
+          <Chart times={times} />
+          <BenchmarkCard
+            title="Worst time"
+            description={`${times.length > 0 ? Math.max(...times) : "-"} ms`}
+            color="text-cyan-500"
+          />
+          <BenchmarkCard
+            title="Consistency"
+            color="text-cyan-500"
+            description={`${getConsistency(times)} ms`}
+          />
 
-            <BenchmarkCard
-              title="Difference from previous"
-              description={`${
-                times.length < 2
-                  ? "-"
-                  :
-                times[times.length - 1] - times[times.length - 2]
-              } ms`}
-              color="text-cyan-500"
-            />
-          </section>
+          <BenchmarkCard
+            title="Difference from previous"
+            description={`${
+              times.length < 2
+                ? "-"
+                : times[times.length - 1] - times[times.length - 2]
+            } ms`}
+            color="text-cyan-500"
+          />
+          <BenchmarkCard
+            title="No. of attempts"
+            color="text-cyan-500"
+            description={`${times.length}`}
+          />
+          <HumanBenchmarkCard time={getAverage()} />
+        </section>
       </TooltipProvider>
     </main>
   );
@@ -222,7 +232,7 @@ const BenchmarkCard = ({
   description?: string;
 }) => {
   return (
-    <Card className="min-w-full md:h-48 w-full h-40 flex flex-col gap-2 items-center justify-start p-4">
+    <Card className="min-w-full h-full w-full flex flex-col gap-2 items-center justify-start p-4">
       <CardTitle className="text-base self-start">{title}</CardTitle>
       <CardContent
         className={`size-full flex items-center justify-center ${color}`}
@@ -237,6 +247,80 @@ const BenchmarkCard = ({
           />
         )}
         <p className={cn("text-2xl text-center")}>{description}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+interface HumanBenchmarkResult {
+  threshold: number;
+  value: number;
+  color: string;
+}
+
+const HumanBenchmarkCard = ({ time }: { time: number }) => {
+  const humanPrc: HumanBenchmarkResult[] = [
+    {
+      threshold: 100,
+      value: 5,
+      color: "text-violet-500",
+    },
+    {
+      threshold: 150,
+      value: 10,
+      color: "text-sky-500",
+    },
+    {
+      threshold: 200,
+      value: 35,
+      color: "text-green-500",
+    },
+    {
+      threshold: 400,
+      value: 50,
+      color: "text-lime-500",
+    },
+    {
+      threshold: 600,
+      value: 75,
+      color: "text-yellow-500",
+    },
+    {
+      threshold: 800,
+      value: 90,
+      color: "text-orange-500",
+    },
+  ];
+  const getValueByThreshold = (threshold: number): HumanBenchmarkResult => {
+    const result = humanPrc.find((prc) => prc.threshold >= threshold);
+    return result
+      ? result
+      : { value: 100, color: "text-red-500", threshold: 500 };
+  };
+  const result = getValueByThreshold(time);
+  return (
+    <Card className="min-w-full h-full w-full flex flex-col gap-2 items-center justify-start p-4">
+      <CardTitle className="text-base self-start">Compared to others</CardTitle>
+      <CardContent
+        className={`size-full flex flex-col items-center justify-center`}
+      >
+        <Tooltip>
+          <TooltipTrigger>
+            <Gauge
+              showValue
+              size={"medium"}
+              displayValue={`${result.value}%`}
+              color={result.color}
+              value={result.value}
+            />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Better results than {result.value}% of people.</p>
+          </TooltipContent>
+        </Tooltip>
+        <p className={cn("text-gray-500 mt-4 text-center")}>
+          Your reaction time compared to others
+        </p>
       </CardContent>
     </Card>
   );
